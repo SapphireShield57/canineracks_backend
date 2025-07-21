@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-SECRET_KEY = 'django-insecure-h%=wv6nf2817*qf=#y1plwlgl#9hsqk09!v-rki#27gz&-fzdg'
+SECRET_KEY = config("DJANGO_SECRET_KEY")
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -56,12 +56,15 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
 
 ]
 
 
-CSRF_TRUSTED_ORIGINS = ['https://canineracks-backend.onrender.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://canineracks-backend.onrender.com',
+    'https://canineracks-inventory-web.vercel.app',
+]
+
 
 ROOT_URLCONF = 'canineracks_backend.urls'
 
