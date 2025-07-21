@@ -61,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 
-CSRF_TRUSTED_ORIGINS = ['https://your-service-name.onrender.com']
+CSRF_TRUSTED_ORIGINS = ['https://canineracks-backend.onrender.com']
 
 ROOT_URLCONF = 'canineracks_backend.urls'
 
