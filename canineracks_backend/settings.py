@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'corsheaders',  # Optional: for React or Flutter frontend access
     'django_cleanup.apps.CleanupConfig',  # auto-delete old image files
     'imagekit',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -58,8 +60,6 @@ MIDDLEWARE = [
 
 ]
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CSRF_TRUSTED_ORIGINS = ['https://your-service-name.onrender.com']
 
@@ -85,9 +85,10 @@ WSGI_APPLICATION = 'canineracks_backend.wsgi.application'
 # Database
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL')
+        default='postgresql://canineracks_db_user:9cquGr9C9s03YyAfEiVU4A51rpvqjMuh@dpg-d1st51h5pdvs73cue5f0-a.oregon-postgres.render.com/canineracks_db'
     )
 }
+
 
 
 # Password validation
@@ -171,3 +172,12 @@ EMAIL_HOST_USER = 'canineracks@gmail.com'
 EMAIL_HOST_PASSWORD = 'chhn ymjj kwwq gtng'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'CanineRacks <canineracks@gmail.com>'
+
+# Cloudinary Settings
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dez33rrls',
+    'API_KEY': '213917457626366',
+    'API_SECRET': 'SxMoAiOSElutoY7dfTdURZ58dvs'
+}
