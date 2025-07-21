@@ -180,7 +180,7 @@ DEFAULT_FROM_EMAIL = 'CanineRacks <canineracks@gmail.com>'
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dez33rrls',
-    'API_KEY': '213917457626366',
-    'API_SECRET': 'SxMoAiOSElutoY7dfTdURZ58dvs'
+    'CLOUD_NAME': 'dcpelmlhu',
+    'API_KEY': '746747611987718',
+    'API_SECRET': 'vtVhjkCkrbLn7jHSoLC7et083aI'
 }
