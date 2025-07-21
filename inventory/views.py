@@ -2,6 +2,7 @@ from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import exception_handler
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
@@ -17,9 +18,11 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
+    # Added for Cloudinary or image upload support
+    parser_classes = [MultiPartParser, FormParser]
+
     def perform_create(self, serializer):
         instance = serializer.save()
-        # Add to history upon creation
         StockHistory.objects.create(
             product=instance,
             action='in',
@@ -35,7 +38,6 @@ class ProductViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
-        # Check for quantity change and create stock history
         new_quantity = serializer.validated_data.get('quantity', old_quantity)
         if new_quantity != old_quantity:
             quantity_diff = new_quantity - old_quantity
@@ -69,7 +71,6 @@ class RecommendationView(generics.ListAPIView):
                       Q(coat_type_code__in=[dog.coat_type, 'CT']) & \
                       Q(lifestyle_code__in=[dog.role, 'LS']) & \
                       Q(health_code__in=[dog.health_considerations, 'NO'])
-
             return Product.objects.filter(filters)
         except DogProfile.DoesNotExist:
             return Product.objects.none()
