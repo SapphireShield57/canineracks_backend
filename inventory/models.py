@@ -1,6 +1,5 @@
 from django.db import models
-from imagekit.models import ImageSpecField
-from imagekit.processors import ResizeToFill
+from cloudinary.models import CloudinaryField
 
 # ==========================
 # Choices for categories
@@ -41,19 +40,13 @@ class Product(models.Model):
     main_category = models.CharField(max_length=50, choices=MAIN_CATEGORIES)
     sub_category = models.CharField(max_length=50, choices=SUB_CATEGORIES)
 
-    # Recommendation-based dog suitability code (e.g. PU-ME-LH-CO-NO)
+    # Recommendation-based dog suitability code
     product_code = models.CharField(max_length=30)
 
-    image = models.ImageField(upload_to='product_images/', blank=True, null=True)
-    thumbnail = ImageSpecField(
-        source='image',
-        processors=[ResizeToFill(300, 300)],
-        format='JPEG',
-        options={'quality': 80}
-    )
+    image = CloudinaryField('image', blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)  # ✅ added this to match your serializer
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} - {self.product_code}"
