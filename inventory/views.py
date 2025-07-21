@@ -1,20 +1,30 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.views import exception_handler
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.db.models import Q
+
 from .models import Product, StockHistory
 from .serializers import ProductSerializer, StockHistorySerializer
 from users.models import DogProfile
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from django.db.models import Q
-from rest_framework_simplejwt.authentication import JWTAuthentication 
-from rest_framework.views import exception_handler
-from rest_framework import status
+
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by('-created_at')
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        # Add to history upon creation
+        StockHistory.objects.create(
+            product=instance,
+            action='in',
+            quantity_changed=instance.quantity
+        )
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -49,7 +59,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class RecommendationView(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication] 
+    authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
         try:
@@ -64,8 +74,9 @@ class RecommendationView(generics.ListAPIView):
         except DogProfile.DoesNotExist:
             return Product.objects.none()
 
+
 # ============================
-# Debug Exception Handler
+# Custom Exception Handler
 # ============================
 
 def custom_exception_handler(exc, context):
