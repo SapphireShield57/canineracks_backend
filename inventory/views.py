@@ -7,8 +7,8 @@ from rest_framework.views import exception_handler
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.db.models import Q
 
-from .models import Product, StockHistory
-from .serializers import ProductSerializer, StockHistorySerializer
+from .models import Product, StockHistory, Order
+from .serializers import ProductSerializer, StockHistorySerializer, OrderSerializer
 from users.models import DogProfile
 from rest_framework.exceptions import ValidationError
 
@@ -106,3 +106,10 @@ def custom_exception_handler(exc, context):
         print(response.data)
         print("====================================\n")
     return response
+
+
+
+class OrderCreateView(generics.CreateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
