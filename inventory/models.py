@@ -1,5 +1,6 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
+from django.contrib.auth import get_user_model
 
 # ==========================
 # Choices for categories
@@ -69,3 +70,21 @@ class StockHistory(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.action} ({self.quantity_changed}) @ {self.timestamp}"
+
+
+User = get_user_model()
+
+class Order(models.Model):
+    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Order #{self.id} by {self.customer.email}"
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"
