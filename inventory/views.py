@@ -10,6 +10,7 @@ from django.db.models import Q
 from .models import Product, StockHistory
 from .serializers import ProductSerializer, StockHistorySerializer
 from users.models import DogProfile
+from rest_framework.exceptions import ValidationError
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -66,12 +67,30 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-            filters = Q(life_stage_code__in=[dog.life_stage, 'LI']) & \
-                      Q(breed_size_code__in=[dog.size, 'BS']) & \
-                      Q(coat_type_code__in=[dog.coat_type, 'CT']) & \
-                      Q(lifestyle_code__in=[dog.role, 'LS']) & \
-                      Q(health_code__in=[dog.health_considerations, 'NO'])
-            return Product.objects.filter(filters)
+            all_products = Product.objects.all()
+
+            filtered = []
+
+            for product in all_products:
+                code = product.product_code
+                segments = code.split('-')
+                if len(segments) < 5:
+                    continue  # Skip invalid format
+
+                stage, size, coat, lifestyle, health = segments[:5]
+
+                # Flexible matching logic
+                if (
+                    (dog.life_stage in stage or stage == 'LI') and
+                    (dog.size in size or size == 'BS') and
+                    (dog.coat_type in coat or coat == 'CT') and
+                    (dog.role in lifestyle or lifestyle == 'LS') and
+                    (dog.health_considerations in health or health == 'NO')
+                ):
+                    filtered.append(product)
+
+            return filtered
+
         except DogProfile.DoesNotExist:
             return Product.objects.none()
 
