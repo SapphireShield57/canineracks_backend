@@ -51,11 +51,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 class DogProfile(models.Model):
     owner = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='dog_profile')
     name = models.CharField(max_length=100)
+    breed = models.CharField(max_length=100)  # Add this
     gender = models.CharField(max_length=10)
     life_stage = models.CharField(max_length=50)
-    size = models.CharField(max_length=30)
+    breed_size = models.CharField(max_length=30)  # Rename 'size' to this
     coat_type = models.CharField(max_length=50)
-    role = models.CharField(max_length=50)
+    lifestyle = models.CharField(max_length=50)  # Add this
     health_considerations = models.TextField(blank=True)
 
     def __str__(self):
