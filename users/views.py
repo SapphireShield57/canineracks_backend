@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -15,6 +15,7 @@ from .serializers import (
     ResetPasswordWithCodeSerializer, DogProfileSerializer
 )
 from .utils import send_verification_email, generate_code
+from rest_framework.generics import ListAPIView
 
 User = get_user_model()
 
@@ -199,3 +200,9 @@ class ResendVerificationCodeView(APIView):
 
         except CustomUser.DoesNotExist:
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserListView(ListAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserCreateSerializer
+    permission_classes = [IsAdminUser]
