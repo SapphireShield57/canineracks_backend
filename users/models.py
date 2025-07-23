@@ -54,7 +54,7 @@ class DogProfile(models.Model):
     breed = models.CharField(max_length=100)  # Add this
     gender = models.CharField(max_length=10)
     life_stage = models.CharField(max_length=50)
-    breed_size = models.CharField(max_length=30)  # Rename 'size' to this
+    size = models.CharField(max_length=30)
     coat_type = models.CharField(max_length=50)
     lifestyle = models.CharField(max_length=50)  # Add this
     health_considerations = models.TextField(blank=True)
