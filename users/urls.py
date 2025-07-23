@@ -14,5 +14,6 @@ urlpatterns = [
 
     path('create-superuser/', views.create_superuser_view),
     path('list/', views.list_users),
+    path('delete/<int:user_id>/', views.delete_user),
 
 ]
