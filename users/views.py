@@ -17,6 +17,8 @@ from .serializers import (
 from .utils import send_verification_email, generate_code
 from rest_framework.generics import ListAPIView
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import PermissionDenied
+
 
 User = get_user_model()
 
@@ -171,8 +173,14 @@ class DogProfileView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self):
-        profile, created = DogProfile.objects.get_or_create(owner=self.request.user)
+        user = self.request.user
+        if user.role != 'customer':
+            # 🔒 Prevent inventory managers or other roles from accessing
+            raise PermissionDenied("Only customers can access or modify their dog profile.")
+        
+        profile, created = DogProfile.objects.get_or_create(owner=user)
         return profile
+
 
 
 # =============================
