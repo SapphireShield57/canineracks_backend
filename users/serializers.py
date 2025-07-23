@@ -122,10 +122,12 @@ class DogProfileSerializer(serializers.ModelSerializer):
         model = DogProfile
         fields = [
             'name',
+            'breed',
             'gender',
             'life_stage',
-            'size',
+            'breed_size',
             'coat_type',
-            'role',
+            'lifestyle',
             'health_considerations'
         ]
+
