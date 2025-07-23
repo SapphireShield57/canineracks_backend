@@ -16,7 +16,7 @@ from .serializers import (
 )
 from .utils import send_verification_email, generate_code
 from rest_framework.generics import ListAPIView
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 
 User = get_user_model()
 
@@ -211,6 +211,7 @@ class UserListView(ListAPIView):
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])  # ✅ This makes it accessible without login
 def create_superuser_view(request):
     if User.objects.filter(is_superuser=True).exists():
         return Response({'message': 'Superuser already exists.'})
@@ -218,6 +219,6 @@ def create_superuser_view(request):
     user = User.objects.create_superuser(
         email='vincentgrey57@gmail.com',
         password='canineracks',
-        is_verified=True
+        is_verified=True  # If using is_verified
     )
-    return Response({'message': 'Superuser created.', 'email': user.email})
+    return Response({'message': 'Superuser created', 'email': user.email})
