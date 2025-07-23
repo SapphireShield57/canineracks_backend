@@ -19,9 +19,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 
-
 User = get_user_model()
-
 
 # =============================
 # Register New User
@@ -38,7 +36,6 @@ class RegisterView(generics.CreateAPIView):
         user = serializer.save()
         code = EmailVerification.objects.create(user=user, purpose='register')
         send_verification_email(user.email, code.code, purpose='register')
-
 
 # =============================
 # Login View
@@ -64,7 +61,6 @@ class LoginView(generics.GenericAPIView):
             }
         })
 
-
 # =============================
 # Send Verification Code (Register or Reset) — with debug
 # =============================
@@ -80,18 +76,13 @@ class SendVerificationCodeView(generics.GenericAPIView):
         purpose = serializer.validated_data['purpose']
 
         user = get_object_or_404(User, email=email)
-
-        # ✅ Delete previous codes for that user and purpose
         EmailVerification.objects.filter(user=user, purpose=purpose).delete()
 
-        # ✅ Generate new code and save with correct purpose
         code = EmailVerification.objects.create(user=user, purpose=purpose)
-        print(f"✅ Stored code {code.code} with purpose '{purpose}' for {email}")  # DEBUG
+        print(f"✅ Stored code {code.code} with purpose '{purpose}' for {email}")
 
         send_verification_email(user.email, code.code, purpose=purpose)
         return Response({'message': f'Verification code sent to {email}'})
-
-
 
 # =============================
 # Verify Code View (no expiration check)
@@ -121,23 +112,21 @@ class VerifyCodeView(generics.GenericAPIView):
 
         if purpose == 'register':
             user.is_verified = True
-            user.is_active = True  # ✅ Activate user after email is verified
+            user.is_active = True
             user.save()
             match.delete()
 
         return Response({'message': 'Verification successful.'})
 
-
-
 # =============================
-# Reset Password with Code (no expiration check)
+# Reset Password with Code
 # =============================
 class ResetPasswordWithCodeView(generics.GenericAPIView):
     serializer_class = ResetPasswordWithCodeSerializer
     permission_classes = [AllowAny]
 
     def post(self, request):
-        print("🔒 Incoming Reset Password Request Data:", request.data)  # DEBUG
+        print("🔒 Incoming Reset Password Request Data:", request.data)
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -154,7 +143,7 @@ class ResetPasswordWithCodeView(generics.GenericAPIView):
         ).first()
 
         if not match:
-            print("❌ No matching verification code found.")  # DEBUG
+            print("❌ No matching verification code found.")
             return Response({'error': 'Invalid or expired code.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.set_password(new_password)
@@ -163,7 +152,6 @@ class ResetPasswordWithCodeView(generics.GenericAPIView):
         print("📄 Available reset codes:", EmailVerification.objects.filter(user=user, purpose='reset').values())
 
         return Response({'message': 'Password has been reset successfully.'})
-
 
 # =============================
 # Dog Profile View (Get/Update)
@@ -175,16 +163,29 @@ class DogProfileView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         user = self.request.user
         if user.role != 'customer':
-            # 🔒 Prevent inventory managers or other roles from accessing
             raise PermissionDenied("Only customers can access or modify their dog profile.")
         
         profile, created = DogProfile.objects.get_or_create(owner=user)
         return profile
 
+# =============================
+# Dog Profile Create View (New Users)
+# =============================
+class DogProfileCreateView(generics.CreateAPIView):
+    serializer_class = DogProfileSerializer
+    permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        if self.request.user.role != 'customer':
+            raise PermissionDenied("Only customers can create dog profiles.")
+        
+        if DogProfile.objects.filter(owner=self.request.user).exists():
+            raise PermissionDenied("Dog profile already exists.")
+
+        serializer.save(owner=self.request.user)
 
 # =============================
-# Resend Verification Code (Register or Reset)
+# Resend Verification Code
 # =============================
 class ResendVerificationCodeView(APIView):
     permission_classes = [AllowAny]
@@ -210,18 +211,33 @@ class ResendVerificationCodeView(APIView):
         except CustomUser.DoesNotExist:
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
-
+# =============================
+# Admin Only: List All Users
+# =============================
 @api_view(['GET'])
 @permission_classes([IsAdminUser])
 def list_users(request):
-    User = get_user_model()
     users = User.objects.all().values('id', 'email', 'role', 'is_active')
     return Response(list(users))
 
+# =============================
+# Admin Only: Delete User
+# =============================
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_user(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-
+# =============================
+# Public: Create Superuser
+# =============================
 @api_view(['POST'])
-@permission_classes([AllowAny])  # ✅ This makes it accessible without login
+@permission_classes([AllowAny])
 def create_superuser_view(request):
     if User.objects.filter(is_superuser=True).exists():
         return Response({'message': 'Superuser already exists.'})
@@ -229,33 +245,6 @@ def create_superuser_view(request):
     user = User.objects.create_superuser(
         email='vincentgrey57@gmail.com',
         password='canineracks',
-        is_verified=True  # If using is_verified
+        is_verified=True
     )
     return Response({'message': 'Superuser created', 'email': user.email})
-
-
-@api_view(['DELETE'])
-@permission_classes([IsAdminUser])
-def delete_user(request, user_id):
-    User = get_user_model()
-    try:
-        user = User.objects.get(id=user_id)
-
-class DogProfileCreateView(generics.CreateAPIView):
-    serializer_class = DogProfileSerializer
-    permission_classes = [IsAuthenticated]
-
-    def perform_create(self, serializer):
-        if self.request.user.role != 'customer':
-            raise PermissionDenied("Only customers can create dog profiles.")
-        
-        # Avoid duplicates
-        if DogProfile.objects.filter(owner=self.request.user).exists():
-            raise PermissionDenied("Dog profile already exists.")
-
-        serializer.save(owner=self.request.user)
-
-        user.delete()
-        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)
-    except User.DoesNotExist:
-        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
