@@ -56,7 +56,7 @@ class DogProfile(models.Model):
     life_stage = models.CharField(max_length=50)
     size = models.CharField(max_length=30)
     coat_type = models.CharField(max_length=50)
-    lifestyle = models.CharField(max_length=50)  # Add this
+    role = models.CharField(max_length=50)  # Add this
     health_considerations = models.TextField(blank=True)
 
     def __str__(self):
