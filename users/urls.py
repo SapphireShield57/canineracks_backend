@@ -11,4 +11,7 @@ urlpatterns = [
 
     path('reset-password/', views.ResetPasswordWithCodeView.as_view(), name='reset-password'),
     path('dog-profile/', views.DogProfileView.as_view(), name='dog-profile'),
+
+    # ✅ NEW: List all users (admin-only)
+    path('users/', views.UserListView.as_view(), name='user-list'),
 ]
