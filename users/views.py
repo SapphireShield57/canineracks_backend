@@ -240,6 +240,21 @@ def delete_user(request, user_id):
     User = get_user_model()
     try:
         user = User.objects.get(id=user_id)
+
+class DogProfileCreateView(generics.CreateAPIView):
+    serializer_class = DogProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        if self.request.user.role != 'customer':
+            raise PermissionDenied("Only customers can create dog profiles.")
+        
+        # Avoid duplicates
+        if DogProfile.objects.filter(owner=self.request.user).exists():
+            raise PermissionDenied("Dog profile already exists.")
+
+        serializer.save(owner=self.request.user)
+
         user.delete()
         return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)
     except User.DoesNotExist:
