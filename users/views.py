@@ -16,6 +16,7 @@ from .serializers import (
 )
 from .utils import send_verification_email, generate_code
 from rest_framework.generics import ListAPIView
+from rest_framework.decorators import api_view
 
 User = get_user_model()
 
@@ -206,3 +207,17 @@ class UserListView(ListAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserCreateSerializer
     permission_classes = [IsAdminUser]
+
+
+
+@api_view(['POST'])
+def create_superuser_view(request):
+    if User.objects.filter(is_superuser=True).exists():
+        return Response({'message': 'Superuser already exists.'})
+
+    user = User.objects.create_superuser(
+        email='admin@canineracks.com',
+        password='StrongPassword123',
+        is_verified=True
+    )
+    return Response({'message': 'Superuser created.', 'email': user.email})
