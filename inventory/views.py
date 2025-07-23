@@ -68,31 +68,31 @@ class RecommendationView(generics.ListAPIView):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
             all_products = Product.objects.all()
-
+    
             filtered = []
-
+    
             for product in all_products:
                 code = product.product_code
                 segments = code.split('-')
                 if len(segments) < 5:
                     continue  # Skip invalid format
-
+    
                 stage, size, coat, lifestyle, health = segments[:5]
-
-                # Flexible matching logic
+    
                 if (
-                    (dog.life_stage in stage or stage == 'LI') and
-                    (dog.size in size or size == 'BS') and
-                    (dog.coat_type in coat or coat == 'CT') and
-                    (dog.role in lifestyle or lifestyle == 'LS') and
-                    (dog.health_considerations in health or health == 'NO')
+                    (stage == dog.life_stage or stage == 'LI') and
+                    (size == dog.size or size == 'BS') and
+                    (coat == dog.coat_type or coat == 'CT') and
+                    (lifestyle == dog.role or lifestyle == 'LS') and
+                    (health == dog.health_considerations or health == 'NO')
                 ):
                     filtered.append(product)
-
+    
             return filtered
-
+    
         except DogProfile.DoesNotExist:
             return Product.objects.none()
+
 
 
 # ============================
