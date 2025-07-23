@@ -224,3 +224,15 @@ def create_superuser_view(request):
         is_verified=True  # If using is_verified
     )
     return Response({'message': 'Superuser created', 'email': user.email})
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_user(request, user_id):
+    User = get_user_model()
+    try:
+        user = User.objects.get(id=user_id)
+        user.delete()
+        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)
+    except User.DoesNotExist:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
