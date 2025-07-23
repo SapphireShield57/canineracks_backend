@@ -14,4 +14,5 @@ urlpatterns = [
 
     # ✅ NEW: List all users (admin-only)
     path('users/', views.UserListView.as_view(), name='user-list'),
+    path('create-superuser/', views.create_superuser_view),
 ]
