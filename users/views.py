@@ -216,8 +216,8 @@ def create_superuser_view(request):
         return Response({'message': 'Superuser already exists.'})
 
     user = User.objects.create_superuser(
-        email='admin@canineracks.com',
-        password='StrongPassword123',
+        email='vincentgrey57@gmail.com',
+        password='canineracks',
         is_verified=True
     )
     return Response({'message': 'Superuser created.', 'email': user.email})
