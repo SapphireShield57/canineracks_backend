@@ -203,10 +203,12 @@ class ResendVerificationCodeView(APIView):
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
 
-class UserListView(ListAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserCreateSerializer
-    permission_classes = [IsAdminUser]
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def list_users(request):
+    User = get_user_model()
+    users = User.objects.all().values('id', 'email', 'role', 'is_active')
+    return Response(list(users))
 
 
 
