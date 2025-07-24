@@ -33,9 +33,10 @@ class RegisterView(generics.CreateAPIView):
         return {'request': self.request}
 
     def perform_create(self, serializer):
-        user = serializer.save()
+        user = serializer.save(role='customer')  # ✅ Force customer role here
         code = EmailVerification.objects.create(user=user, purpose='register')
         send_verification_email(user.email, code.code, purpose='register')
+  
 
 # =============================
 # Login View
