@@ -18,8 +18,6 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-
-    # Added for Cloudinary or image upload support
     parser_classes = [MultiPartParser, FormParser]
 
     def perform_create(self, serializer):
@@ -69,8 +67,11 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-            all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
 
+            # ✅ Alias for clarity
+            lifestyle = dog.role  # this is the key change
+
+            all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
             filtered = []
 
             for product in all_products:
@@ -79,13 +80,13 @@ class RecommendationView(generics.ListAPIView):
                 if len(segments) < 5:
                     continue  # skip invalid product code format
 
-                stage, size, coat, lifestyle, health = segments[:5]
+                stage, size, coat, product_lifestyle, health = segments[:5]
 
                 if (
                     (stage == dog.life_stage or stage == 'LI') and
-                    (size == dog.breed_size or size == 'BS') and
+                    (size == dog.size or size == 'BS') and
                     (coat == dog.coat_type or coat == 'CT') and
-                    (lifestyle == dog.lifestyle or lifestyle == 'LS') and
+                    (product_lifestyle == lifestyle or product_lifestyle == 'LS') and
                     (health == dog.health_considerations or health == 'NO')
                 ):
                     filtered.append(product)
@@ -107,7 +108,6 @@ def custom_exception_handler(exc, context):
         print(response.data)
         print("====================================\n")
     return response
-
 
 
 class OrderCreateView(generics.CreateAPIView):
