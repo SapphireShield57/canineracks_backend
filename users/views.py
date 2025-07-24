@@ -33,9 +33,21 @@ class RegisterView(generics.CreateAPIView):
         return {'request': self.request}
 
     def perform_create(self, serializer):
-        user = serializer.save(role='customer')  # ✅ Force customer role here
+        # Force the role to "customer" explicitly, regardless of what the serializer does
+        validated_data = serializer.validated_data
+        validated_data['role'] = 'customer'
+    
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            role='customer',  # Force here
+            is_active=False,
+            is_verified=False,
+        )
+    
         code = EmailVerification.objects.create(user=user, purpose='register')
         send_verification_email(user.email, code.code, purpose='register')
+
   
 
 # =============================
