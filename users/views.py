@@ -18,6 +18,7 @@ from .utils import send_verification_email, generate_code
 from rest_framework.generics import ListAPIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 User = get_user_model()
 
@@ -261,3 +262,13 @@ def create_superuser_view(request):
         is_verified=True
     )
     return Response({'message': 'Superuser created', 'email': user.email})
+
+
+
+class DogProfileExistsView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        exists = DogProfile.objects.filter(owner=request.user).exists()
+        return Response({'exists': exists})
