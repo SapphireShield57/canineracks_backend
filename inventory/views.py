@@ -86,7 +86,7 @@ class RecommendationView(generics.ListAPIView):
                     (stage == dog.life_stage or stage == 'LI') and
                     (size == dog.size or size == 'BS') and
                     (coat == dog.coat_type or coat == 'CT') and
-                    (product_lifestyle == lifestyle or product_lifestyle == 'LS') and
+                    (lifestyle == dog.role or lifestyle == 'LS') and
                     (health == dog.health_considerations or health == 'NO')
                 ):
                     filtered.append(product)
