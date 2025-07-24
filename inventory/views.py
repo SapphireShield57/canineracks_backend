@@ -68,44 +68,44 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-            dog_attrs = [
-                dog.life_stage.upper(),            # e.g. 'PU'
-                dog.size.upper(),                 # e.g. 'SM'
-                dog.coat_type.upper(),            # e.g. 'SH'
-                dog.role.upper(),                 # e.g. 'CO'
-            ]
-            health_codes = [h.strip().upper() for h in dog.health_considerations.split(',')]
-            dog_attrs.extend(health_codes)
-    
+
+            # Prepare attributes
+            life_stage = dog.life_stage.strip().upper()
+            size = dog.size.strip().upper()
+            coat_type = dog.coat_type.strip().upper()
+            role = dog.role.strip().upper()
+            health_codes = [h.strip().upper() for h in dog.health_considerations.split(',') if h.strip()]
+
             all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
             recommended = []
-    
+
             for product in all_products:
                 code = product.product_code.upper().replace(' ', '')
                 segments = code.split('-')
-    
+
                 if len(segments) < 5:
-                    continue  # Ignore improperly formatted products
-    
-                life_stage_seg = segments[0]  # e.g. 'PUAD'
-                size_seg = segments[1]       # e.g. 'BSSM'
-                coat_seg = segments[2]       # e.g. 'HYSH'
-                role_seg = segments[3]       # e.g. 'CO'
-                health_seg = segments[4]     # e.g. 'NOBRJM'
-    
+                    continue  # Skip malformed product codes
+
+                life_stage_seg = segments[0]
+                size_seg = segments[1]
+                coat_seg = segments[2]
+                role_seg = segments[3]
+                health_seg = segments[4]
+
                 if (
-                    dog.life_stage in life_stage_seg and
-                    dog.size in size_seg and
-                    dog.coat_type in coat_seg and
-                    dog.role in role_seg and
+                    life_stage in life_stage_seg and
+                    size in size_seg and
+                    coat_type in coat_seg and
+                    role in role_seg and
                     any(h in health_seg for h in health_codes)
                 ):
                     recommended.append(product)
-    
+
             return recommended
-    
+
         except DogProfile.DoesNotExist:
             return Product.objects.none()
+
 
 # ============================
 # Custom Exception Handler
