@@ -59,6 +59,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
 MAIN_CATEGORIES = ['Food', 'Treat', 'Health', 'Grooming', 'Wellness']
 
+
 class RecommendationView(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
@@ -67,9 +68,13 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-
-            # ✅ Alias for clarity
-            lifestyle = dog.role  # this is the key change
+            dog_attrs = [
+                dog.life_stage,              # e.g. 'AD'
+                dog.size,                    # e.g. 'ME'
+                dog.coat_type,               # e.g. 'HY'
+                dog.role,                    # e.g. 'CO'
+                dog.health_considerations    # e.g. 'NO'
+            ]
 
             all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
             filtered = []
@@ -78,17 +83,9 @@ class RecommendationView(generics.ListAPIView):
                 code = product.product_code
                 segments = code.split('-')
                 if len(segments) < 5:
-                    continue  # skip invalid product code format
+                    continue  # Skip invalid format
 
-                stage, size, coat, product_lifestyle, health = segments[:5]
-
-                if (
-                    (stage == dog.life_stage or stage == 'LI') and
-                    (size == dog.size or size == 'BS') and
-                    (coat == dog.coat_type or coat == 'CT') and
-                    (lifestyle == dog.role or lifestyle == 'LS') and
-                    (health == dog.health_considerations or health == 'NO')
-                ):
+                if all(dog_attrs[i] in segments[i] for i in range(5)):
                     filtered.append(product)
 
             return filtered
