@@ -127,7 +127,7 @@ class DogProfileSerializer(serializers.ModelSerializer):
             'life_stage',
             'size',
             'coat_type',
-            'role',
+            'lifestyle',
             'health_considerations'
         ]
 
