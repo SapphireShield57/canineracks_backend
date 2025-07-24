@@ -59,6 +59,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+MAIN_CATEGORIES = ['Food', 'Treat', 'Health', 'Grooming', 'Wellness']
+
 class RecommendationView(generics.ListAPIView):
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticated]
@@ -67,32 +69,31 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-            all_products = Product.objects.all()
-    
+            all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
+
             filtered = []
-    
+
             for product in all_products:
                 code = product.product_code
                 segments = code.split('-')
                 if len(segments) < 5:
-                    continue  # Skip invalid format
-    
+                    continue  # skip invalid product code format
+
                 stage, size, coat, lifestyle, health = segments[:5]
-    
+
                 if (
                     (stage == dog.life_stage or stage == 'LI') and
-                    (size == dog.size or size == 'BS') and
+                    (size == dog.breed_size or size == 'BS') and
                     (coat == dog.coat_type or coat == 'CT') and
-                    (lifestyle == dog.role or lifestyle == 'LS') and
+                    (lifestyle == dog.lifestyle or lifestyle == 'LS') and
                     (health == dog.health_considerations or health == 'NO')
                 ):
                     filtered.append(product)
-    
+
             return filtered
-    
+
         except DogProfile.DoesNotExist:
             return Product.objects.none()
-
 
 
 # ============================
