@@ -263,12 +263,8 @@ def create_superuser_view(request):
     )
     return Response({'message': 'Superuser created', 'email': user.email})
 
-
-
-class DogProfileExistsView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
-    def get(self, request):
-        exists = DogProfile.objects.filter(owner=request.user).exists()
-        return Response({'exists': exists})
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def dog_profile_exists(request):
+    exists = DogProfile.objects.filter(owner=request.user).exists()
+    return Response({'exists': exists})
