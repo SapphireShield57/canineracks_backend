@@ -118,6 +118,8 @@ class ResetPasswordWithCodeSerializer(serializers.Serializer):
 # Dog Profile Serializer
 # ===========================
 class DogProfileSerializer(serializers.ModelSerializer):
+    lifestyle = serializers.CharField(source='role')  # ✅ alias 'role' to 'lifestyle'
+
     class Meta:
         model = DogProfile
         fields = [
@@ -127,7 +129,6 @@ class DogProfileSerializer(serializers.ModelSerializer):
             'life_stage',
             'size',
             'coat_type',
-            'lifestyle',
+            'lifestyle',  # ✅ now allowed through aliasing
             'health_considerations'
         ]
-
