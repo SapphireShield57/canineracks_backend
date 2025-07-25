@@ -77,26 +77,50 @@ class RecommendationView(generics.ListAPIView):
             all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
             recommended = []
 
+            # Mapping of implied general codes (e.g. PU => LI means LI includes PU)
+            ALL_EQUIV = {
+                'PU': ['LI'],
+                'AD': ['LI'],
+                'SE': ['LI'],
+                'SH': ['CT'],
+                'LH': ['CT'],
+                'HY': ['CT'],
+                'WS': ['LS'],
+                'CO': ['LS'],
+                'LS': ['LS'],
+                'NO': ['NOBRJMAS'],
+                'BR': ['NOBRJMAS'],
+                'JM': ['NOBRJMAS'],
+                'AS': ['NOBRJMAS'],
+                'SM': ['BS'],
+                'ME': ['BS'],
+                'LA': ['BS'],
+                'GI': ['BS'],
+            }
+
+            def matches(value, segment, all_equiv):
+                segment = segment.upper()
+                value = value.upper()
+                return value in segment or segment in all_equiv.get(value, [])
+
             for product in all_products:
                 code = product.product_code.upper().replace(' ', '')
                 segments = code.split('-')
-
                 if len(segments) < 5:
-                    continue  # Skip improperly formatted product codes
+                    continue  # skip malformed codes
 
-                life_stage_seg = segments[0]  # e.g. 'PUADLI'
-                size_seg = segments[1]        # e.g. 'SMME'
-                coat_seg = segments[2]        # e.g. 'SHLH'
-                role_seg = segments[3]        # e.g. 'WSCO'
-                health_seg = segments[4]      # e.g. 'NOBRJMAS'
+                life_stage_seg = segments[0]
+                size_seg = segments[1]
+                coat_seg = segments[2]
+                role_seg = segments[3]
+                health_seg = segments[4]
 
-                # Check if each individual attribute is contained in the corresponding segment
                 if (
-                    life_stage in life_stage_seg and
-                    size in size_seg and
-                    coat_type in coat_seg and
-                    role in role_seg and
-                    any(hc in health_seg for hc in health_codes)
+                    matches(life_stage, life_stage_seg, ALL_EQUIV) and
+                    matches(size, size_seg, ALL_EQUIV) and
+                    matches(coat_type, coat_seg, ALL_EQUIV) and
+                    matches(role, role_seg, ALL_EQUIV) and
+                    any(matches(hc, health_seg, ALL_EQUIV) for hc in health_codes)
                 ):
                     recommended.append(product)
 
@@ -104,7 +128,6 @@ class RecommendationView(generics.ListAPIView):
 
         except DogProfile.DoesNotExist:
             return Product.objects.none()
-
 
 
 # ============================
