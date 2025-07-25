@@ -68,12 +68,10 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-
-            # Prepare attributes
-            life_stage = dog.life_stage.strip().upper()
-            size = dog.size.strip().upper()
-            coat_type = dog.coat_type.strip().upper()
-            role = dog.role.strip().upper()
+            life_stage = dog.life_stage.upper().strip()
+            size = dog.size.upper().strip()
+            coat_type = dog.coat_type.upper().strip()
+            role = dog.role.upper().strip()
             health_codes = [h.strip().upper() for h in dog.health_considerations.split(',') if h.strip()]
 
             all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
@@ -84,20 +82,21 @@ class RecommendationView(generics.ListAPIView):
                 segments = code.split('-')
 
                 if len(segments) < 5:
-                    continue  # Skip malformed product codes
+                    continue  # Skip improperly formatted product codes
 
-                life_stage_seg = segments[0]
-                size_seg = segments[1]
-                coat_seg = segments[2]
-                role_seg = segments[3]
-                health_seg = segments[4]
+                life_stage_seg = segments[0]  # e.g. 'PUADLI'
+                size_seg = segments[1]        # e.g. 'SMME'
+                coat_seg = segments[2]        # e.g. 'SHLH'
+                role_seg = segments[3]        # e.g. 'WSCO'
+                health_seg = segments[4]      # e.g. 'NOBRJMAS'
 
+                # Check if each individual attribute is contained in the corresponding segment
                 if (
                     life_stage in life_stage_seg and
                     size in size_seg and
                     coat_type in coat_seg and
                     role in role_seg and
-                    any(h in health_seg for h in health_codes)
+                    any(hc in health_seg for hc in health_codes)
                 ):
                     recommended.append(product)
 
@@ -105,6 +104,7 @@ class RecommendationView(generics.ListAPIView):
 
         except DogProfile.DoesNotExist:
             return Product.objects.none()
+
 
 
 # ============================
