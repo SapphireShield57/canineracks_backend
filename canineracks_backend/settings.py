@@ -141,8 +141,11 @@ AUTHENTICATION_BACKENDS = [
 # ✅ CORS CONFIGURATION
 CORS_ALLOW_ALL_ORIGINS = False
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",  # ✅ Allows ALL localhost ports
+]
+
 CORS_ALLOWED_ORIGINS = [
-    r"^http://localhost:\d+$",
     "https://canineracks-inventory-web.vercel.app",  # Production frontend
 ]
 
@@ -151,7 +154,6 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = False
 
 # ✅ CSRF Trusted (still useful if CSRF enabled later)
 CSRF_TRUSTED_ORIGINS = [
