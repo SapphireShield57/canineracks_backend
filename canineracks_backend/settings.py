@@ -4,6 +4,7 @@ import dj_database_url
 from decouple import config
 import os
 from corsheaders.defaults import default_headers  # ✅ Required for custom headers
+import re
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -141,8 +142,7 @@ AUTHENTICATION_BACKENDS = [
 CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:59908",  # Flutter Web
-    "http://localhost:3000",   # Optional: React/Vite dev server
+    r"^http://localhost:\d+$",
     "https://canineracks-inventory-web.vercel.app",  # Production frontend
 ]
 
@@ -151,6 +151,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 # ✅ CSRF Trusted (still useful if CSRF enabled later)
 CSRF_TRUSTED_ORIGINS = [
