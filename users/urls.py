@@ -11,10 +11,11 @@ urlpatterns = [
 
     path('reset-password/', views.ResetPasswordWithCodeView.as_view(), name='reset-password'),
     path('dog-profile/', views.DogProfileView.as_view(), name='dog-profile'),
-    path('dog-profile/create/', views.upsert_dog_profile.as_view(), name='dog-profile-create'),
 
     path('create-superuser/', views.create_superuser_view),
     path('list/', views.list_users),
     path('delete/<int:user_id>/', views.delete_user),
     path('dog-profile/exists/', views.dog_profile_exists),
+    path('dog-profile/create/', views.upsert_dog_profile, name='dog-profile-create'),
+
 ]
