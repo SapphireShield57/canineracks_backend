@@ -177,18 +177,27 @@ class DogProfileView(generics.RetrieveUpdateAPIView):
 # =============================
 # Dog Profile Create View (New Users)
 # =============================
-class DogProfileCreateView(generics.CreateAPIView):
-    serializer_class = DogProfileSerializer
-    permission_classes = [IsAuthenticated]
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upsert_dog_profile(request):
+    user = request.user
+    if user.role != 'customer':
+        raise PermissionDenied("Only customers can manage dog profiles.")
+    
+    data = request.data
+    profile, created = DogProfile.objects.get_or_create(owner=user)
 
-    def perform_create(self, serializer):
-        if self.request.user.role != 'customer':
-            raise PermissionDenied("Only customers can create dog profiles.")
-        
-        if DogProfile.objects.filter(owner=self.request.user).exists():
-            raise PermissionDenied("Dog profile already exists.")
+    profile.name = data.get('name', profile.name)
+    profile.breed = data.get('breed', profile.breed)
+    profile.life_stage = data.get('life_stage', profile.life_stage)
+    profile.size = data.get('size', profile.size)
+    profile.coat_type = data.get('coat_type', profile.coat_type)
+    profile.role = data.get('role', profile.role)
+    profile.health_considerations = data.get('health_considerations', profile.health_considerations)
+    profile.save()
 
-        serializer.save(owner=self.request.user)
+    return Response({'message': 'Dog profile saved.'}, status=status.HTTP_200_OK)
+
 
 # =============================
 # Resend Verification Code
