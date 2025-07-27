@@ -68,16 +68,26 @@ class RecommendationView(generics.ListAPIView):
     def get_queryset(self):
         try:
             dog = DogProfile.objects.get(owner=self.request.user)
-            life_stage = dog.life_stage.upper().strip()
-            size = dog.size.upper().strip()
-            coat_type = dog.coat_type.upper().strip()
-            role = dog.role.upper().strip()
-            health_codes = [h.strip().upper() for h in dog.health_considerations.split(',') if h.strip()]
 
-            all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
-            recommended = []
+            PROFILE_MAP = {
+                "PUPPY": "PU",
+                "ADULT": "AD",
+                "SENIOR": "SE",
+                "SMALL": "SM",
+                "MEDIUM": "ME",
+                "LARGE": "LA",
+                "GIANT": "GI",
+                "SHORT-HAIRED": "SH",
+                "LONG-HAIRED": "LH",
+                "HYPOALLERGENIC": "HY",
+                "WORKING / SERVICE DOGS": "WS",
+                "COMPANION DOGS": "CO",
+                "NONE": "NO",
+                "BRACHYCEPHALIC (SHORT-NOSED)": "BR",
+                "JOINT AND MOBILITY ISSUES": "JM",
+                "ALLERGIES AND SENSITIVITIES": "AS",
+            }
 
-            # Mapping of implied general codes (e.g. PU => LI means LI includes PU)
             ALL_EQUIV = {
                 'PU': ['LI'],
                 'AD': ['LI'],
@@ -97,6 +107,18 @@ class RecommendationView(generics.ListAPIView):
                 'LA': ['BS'],
                 'GI': ['BS'],
             }
+
+            # Map dog profile values to short codes
+            life_stage = PROFILE_MAP.get(dog.life_stage.upper().strip(), "")
+            size = PROFILE_MAP.get(dog.size.upper().strip(), "")
+            coat_type = PROFILE_MAP.get(dog.coat_type.upper().strip(), "")
+            role = PROFILE_MAP.get(dog.role.upper().strip(), "")
+            health_codes = [
+                PROFILE_MAP.get(h.strip().upper(), "") for h in dog.health_considerations.split(',') if h.strip()
+            ]
+
+            all_products = Product.objects.filter(main_category__in=MAIN_CATEGORIES)
+            recommended = []
 
             def matches(value, segment, all_equiv):
                 if value in segment:
@@ -134,7 +156,6 @@ class RecommendationView(generics.ListAPIView):
 
         except DogProfile.DoesNotExist:
             return Product.objects.none()
-
 # ============================
 # Custom Exception Handler
 # ============================
