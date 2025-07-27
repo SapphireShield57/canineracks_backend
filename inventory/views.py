@@ -99,9 +99,15 @@ class RecommendationView(generics.ListAPIView):
             }
 
             def matches(value, segment, all_equiv):
-                segment = segment.upper()
-                value = value.upper()
-                return value in segment or segment in all_equiv.get(value, [])
+                if value in segment:
+                    return True
+                if segment in all_equiv.get(value, []):
+                    return True
+                if value in all_equiv:
+                    for alt in all_equiv[value]:
+                        if alt in segment:
+                            return True
+                return False
 
             for product in all_products:
                 code = product.product_code.upper().replace(' ', '')
@@ -128,7 +134,6 @@ class RecommendationView(generics.ListAPIView):
 
         except DogProfile.DoesNotExist:
             return Product.objects.none()
-
 
 # ============================
 # Custom Exception Handler
