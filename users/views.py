@@ -17,7 +17,7 @@ from .serializers import (
 from .utils import send_verification_email, generate_code
 from rest_framework.generics import ListAPIView
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 User = get_user_model()
@@ -166,12 +166,18 @@ class DogProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = DogProfileSerializer
     permission_classes = [IsAuthenticated]
 
+    from rest_framework.exceptions import NotFound
+
     def get_object(self):
         user = self.request.user
         if user.role != 'customer':
             raise PermissionDenied("Only customers can access or modify their dog profile.")
         
-        profile, created = DogProfile.objects.get_or_create(owner=user)
+        try:
+            return DogProfile.objects.get(owner=user)
+        except DogProfile.DoesNotExist:
+            raise NotFound("Dog profile not yet created.")
+
         return profile
 
 # =============================
