@@ -1,4 +1,3 @@
-# render.yaml
 services:
   - type: web
     name: canineracks-backend
@@ -6,11 +5,14 @@ services:
     plan: free
     buildCommand: ""
     startCommand: gunicorn canineracks_backend.wsgi:application
+
     envVars:
       - key: DEBUG
-        value: False
-      - key: django-insecure-h%=wv6nf2817*qf=#y1plwlgl#9hsqk09!v-rki#27gz&-fzdg
+        value: "False"
+
+      - key: SECRET_KEY
         generateValue: true
+
       - key: DATABASE_URL
         fromDatabase:
           name: canineracks-db
