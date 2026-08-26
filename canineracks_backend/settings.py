@@ -1,144 +1,250 @@
 from pathlib import Path
 from datetime import timedelta
+import os
+
 import dj_database_url
 from decouple import config
-import os
-from corsheaders.defaults import default_headers  # ✅ Required for custom headers
-import re
+from corsheaders.defaults import default_headers
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# ============================================================
+# SECURITY / ENVIRONMENT
+# ============================================================
+
 SECRET_KEY = config("DJANGO_SECRET_KEY")
-DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Optional: restrict in production
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-# Application definition
+ALLOWED_HOSTS = ["*"]
+
+
+# ============================================================
+# APPLICATIONS
+# ============================================================
+
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
-    'rest_framework',
-    'rest_framework.authtoken',
-    'djoser',
-    'users',
-    'inventory',
+    # Third-party
+    "rest_framework",
+    "rest_framework.authtoken",
+    "djoser",
 
-    'corsheaders',  # ✅ CORS support
-    'django_cleanup.apps.CleanupConfig',
-    'imagekit',
-    'cloudinary',
-    'cloudinary_storage',
+    "corsheaders",
+    "django_cleanup.apps.CleanupConfig",
+    "imagekit",
+    "cloudinary",
+    "cloudinary_storage",
+
+    # Local apps
+    "users",
+    "inventory",
 ]
+
+
+# ============================================================
+# MIDDLEWARE
+# ============================================================
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',  # ✅ Must be at the top
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+
+    # CSRF middleware intentionally remains disabled
+    # "django.middleware.csrf.CsrfViewMiddleware",
+
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
 ]
 
-ROOT_URLCONF = 'canineracks_backend.urls'
+
+# ============================================================
+# URL / TEMPLATE / WSGI
+# ============================================================
+
+ROOT_URLCONF = "canineracks_backend.urls"
+
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'canineracks_backend.wsgi.application'
 
-# Database
+WSGI_APPLICATION = "canineracks_backend.wsgi.application"
+
+
+# ============================================================
+# DATABASE
+# ============================================================
+#
+# Render supplies DATABASE_URL through the environment.
+#
+# We intentionally DO NOT hard-code the old PostgreSQL URL here.
+#
+# ============================================================
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://canineracks_db_user:9cquGr9C9s03YyAfEiVU4A51rpvqjMuh@dpg-d1st51h5pdvs73cue5f0-a.oregon-postgres.render.com/canineracks_db'
+    "default": dj_database_url.config(
+        conn_max_age=600
     )
 }
 
-# Password validation
+
+# ============================================================
+# PASSWORD VALIDATION
+# ============================================================
+
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "UserAttributeSimilarityValidator"
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "MinimumLengthValidator"
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "CommonPasswordValidator"
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": (
+            "django.contrib.auth.password_validation."
+            "NumericPasswordValidator"
+        ),
     },
 ]
 
-AUTH_USER_MODEL = 'users.CustomUser'
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Asia/Manila'
+# ============================================================
+# CUSTOM USER MODEL
+# ============================================================
+
+AUTH_USER_MODEL = "users.CustomUser"
+
+
+# ============================================================
+# INTERNATIONALIZATION
+# ============================================================
+
+LANGUAGE_CODE = "en-us"
+
+TIME_ZONE = "Asia/Manila"
+
 USE_I18N = True
+
 USE_TZ = True
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# ============================================================
+# STATIC FILES
+# ============================================================
 
-# Django REST Framework
+STATIC_URL = "/static/"
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+
+# ============================================================
+# DEFAULT PRIMARY KEY
+# ============================================================
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ============================================================
+# DJANGO REST FRAMEWORK
+# ============================================================
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
     ),
-    'EXCEPTION_HANDLER': 'inventory.views.custom_exception_handler',
+    "EXCEPTION_HANDLER": "inventory.views.custom_exception_handler",
 }
 
-# SimpleJWT Configuration
+
+# ============================================================
+# SIMPLE JWT
+# ============================================================
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# Djoser Configuration
+
+# ============================================================
+# DJOSER
+# ============================================================
+
 DJOSER = {
-    'LOGIN_FIELD': 'email',
-    'USER_CREATE_PASSWORD_RETYPE': True,
-    'SEND_ACTIVATION_EMAIL': True,
-    'SEND_CONFIRMATION_EMAIL': True,
-    'PASSWORD_RESET_CONFIRM_URL': 'password-reset/confirm/{uid}/{token}',
-    'ACTIVATION_URL': 'activate/{uid}/{token}',
-    'SERIALIZERS': {
-        'user_create': 'users.serializers.UserCreateSerializer',
-        'user': 'users.serializers.UserSerializer',
-        'current_user': 'users.serializers.UserSerializer',
+    "LOGIN_FIELD": "email",
+    "USER_CREATE_PASSWORD_RETYPE": True,
+
+    "SEND_ACTIVATION_EMAIL": True,
+    "SEND_CONFIRMATION_EMAIL": True,
+
+    "PASSWORD_RESET_CONFIRM_URL": (
+        "password-reset/confirm/{uid}/{token}"
+    ),
+
+    "ACTIVATION_URL": "activate/{uid}/{token}",
+
+    "SERIALIZERS": {
+        "user_create": "users.serializers.UserCreateSerializer",
+        "user": "users.serializers.UserSerializer",
+        "current_user": "users.serializers.UserSerializer",
     },
 }
 
+
+# ============================================================
+# AUTHENTICATION BACKENDS
+# ============================================================
+
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'users.backends.EmailBackend',
+    "django.contrib.auth.backends.ModelBackend",
+    "users.backends.EmailBackend",
 ]
 
-# ✅ CORS CONFIGURATION
+
+# ============================================================
+# CORS
+# ============================================================
+
 CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
@@ -146,37 +252,94 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^http://127\.0\.0\.1:\d+$",
 ]
 
-
 CORS_ALLOWED_ORIGINS = [
-    "https://canineracks-inventory-web.vercel.app",  # Production frontend
+    "https://canineracks-inventory-web.vercel.app",
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
-    'Authorization',
+    "Authorization",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
 
-# ✅ CSRF Trusted (still useful if CSRF enabled later)
+
+# ============================================================
+# CSRF TRUSTED ORIGINS
+# ============================================================
+
 CSRF_TRUSTED_ORIGINS = [
-    'https://canineracks-backend.onrender.com',
-    'https://canineracks-inventory-web.vercel.app',
+    "https://canineracks-backend.onrender.com",
+    "https://canineracks-inventory-web.vercel.app",
 ]
 
-# ✅ EMAIL SETTINGS (use App Passwords for Gmail)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'canineracks@gmail.com'
-EMAIL_HOST_PASSWORD = 'chhn ymjj kwwq gtng'
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'CanineRacks <canineracks@gmail.com>'
 
-# ✅ CLOUDINARY STORAGE
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# ============================================================
+# EMAIL / GMAIL SMTP
+# ============================================================
+#
+# Credentials are supplied through Render environment variables.
+# Do NOT put the Gmail App Password in this file.
+#
+# ============================================================
+
+EMAIL_BACKEND = (
+    "django.core.mail.backends.smtp.EmailBackend"
+)
+
+EMAIL_HOST = config(
+    "EMAIL_HOST",
+    default="smtp.gmail.com",
+)
+
+EMAIL_PORT = config(
+    "EMAIL_PORT",
+    default=587,
+    cast=int,
+)
+
+EMAIL_HOST_USER = config(
+    "EMAIL_HOST_USER"
+)
+
+EMAIL_HOST_PASSWORD = config(
+    "EMAIL_HOST_PASSWORD"
+)
+
+EMAIL_USE_TLS = config(
+    "EMAIL_USE_TLS",
+    default=True,
+    cast=bool,
+)
+
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL",
+    default="CanineRacks <canineracks@gmail.com>",
+)
+
+
+# ============================================================
+# CLOUDINARY
+# ============================================================
+#
+# Credentials are supplied through Render environment variables.
+# Do NOT put the Cloudinary API secret in this file.
+#
+# ============================================================
+
+DEFAULT_FILE_STORAGE = (
+    "cloudinary_storage.storage.MediaCloudinaryStorage"
+)
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dcpelmlhu',
-    'API_KEY': '746747611987718',
-    'API_SECRET': 'vtVhjkCkrbLn7jHSoLC7et083aI'
+    "CLOUD_NAME": config(
+        "CLOUDINARY_CLOUD_NAME"
+    ),
+
+    "API_KEY": config(
+        "CLOUDINARY_API_KEY"
+    ),
+
+    "API_SECRET": config(
+        "CLOUDINARY_API_SECRET"
+    ),
 }
